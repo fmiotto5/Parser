@@ -147,16 +147,82 @@ Acho que por enquanto é isso. Dá uma revisada na associatividade da parte de e
 #include <stdio.h>
 #include <stdlib.h>
 
+char st[20000];
 char c;
 int tk = 0;
 char lex[20];
+char linha[4], coluna[4];
 
-int ProgC(){ //PROGC -> LD
+int leArquivo() {
+    char tkAux[3];
+    int i = 0, pos = 0;
+    int posTk = 0;
+    c = st[pos];
+    pos++;
+    tkAux[posTk] = c;
+    posTk++;
+    c = st[pos];
+    pos++;
+    if (c >= '0' && c <= '9') {
+        tkAux[posTk] = c;
+        c = st[pos];
+        pos++;
+        posTk++;
+    }
+    tkAux[posTk] = '\0';
+    posTk = 0;
+    c = st[pos]; //espaço em branco
+    pos++;
+    while (c != ' ') { // le até o fim do lexema
+        lex[i] = c;
+        c = st[pos];
+        pos++;
+        i++;
+    }
+    lex[i] = '\0'; //fecha lex
+    i = 0;
+    c = st[pos];
+    pos++;
+
+    while (c >= '0' && c <= '9') { // le até o fim da linha
+        linha[i] = c;
+        c = st[pos];
+        pos++;
+        i++;
+    }
+    linha[i] = '\0';
+    i = 0;
+    c = st[pos];
+    pos++;
+
+    while (c >= '0' && c <= '9') { // le até o fim da linha
+        coluna[i] = c;
+        c = st[pos];
+        pos++;
+        i++;
+    }
+    coluna[i] = '\0';
+    i = 0;
+
+    while(c != '\n' && c != '\177'){
+        c = st[pos];
+        pos++;
+        if (c=='\n')
+            printf("entrei \ n");
+
+        if (c=='\177')
+            printf("entrei \ 177");
+    }
+
+    printf("tk %s, lex %s, linha %s, coluna %s",tkAux, lex, linha, coluna);
+}
+
+int ProgC() { //PROGC -> LD
     if (LD() == 0)
         return 0;
 }
 
-int LD(){ //LD -> DEC LD / DEC
+int LD() { //LD -> DEC LD / DEC
     if (Dec() == 0)
         return 0;
 
@@ -164,7 +230,7 @@ int LD(){ //LD -> DEC LD / DEC
         return 0;
 }
 
-int Dec(){ //DEC -> DF / DV
+int Dec() { //DEC -> DF / DV
     if (DV() == 0)
         return 0;
 
@@ -172,36 +238,37 @@ int Dec(){ //DEC -> DF / DV
         return 0;
 }
 
-int DV(){ //DV -> TIPO LI ;
+int DV() { //DV -> TIPO LI ;
     if (Tipo() == 0)
         return 0;
 
     if (LI() == 0)
         return 0;
 
-    if (tk == TKPontoeVirg){
+    if (tk == TKPontoeVirg) {
         //tk = le_token(exp1,lex);
         return 1;
     }
 }
 
-int Tipo(){ // TIPO -> char / signed / signed char / unsigned / unsigned char / int / signed int / unsigned int / short / short int / signed short int / unsigned short int / long / long long / long long int / long int / signed long int / unsigned long int / float / double / long double
-    if(tk == TKChar){
+int
+Tipo() { // TIPO -> char / signed / signed char / unsigned / unsigned char / int / signed int / unsigned int / short / short int / signed short int / unsigned short int / long / long long / long long int / long int / signed long int / unsigned long int / float / double / long double
+    if (tk == TKChar) {
         //tk = le_token(exp1,lex);
         return 1;
     }
 
-    if(tk == TKSigned){
+    if (tk == TKSigned) {
         //tk = le_token(exp1,lex);
         return 1;
     }
 
-    if(tk == TKUnsigned){
+    if (tk == TKUnsigned) {
         //tk = le_token(exp1,lex);
         return 1;
     }
 
-    if(tk == TKInt){
+    if (tk == TKInt) {
         //tk = le_token(exp1,lex);
         return 1;
     }
@@ -210,35 +277,60 @@ int Tipo(){ // TIPO -> char / signed / signed char / unsigned / unsigned char / 
 
 }
 
-int LI(){}
+int LI() {}
 
-int DF(){}
+int DF() {}
 
-int LPF(){}
+int LPF() {}
 
-int RLPF(){}
+int RLPF() {}
 
-int Corpo(){}
+int Corpo() {}
 
-int LCD(){}
+int LCD() {}
 
-int Com(){}
+int Com() {}
 
-int ComIf(){}
+int ComIf() {}
 
-int RIf(){}
+int RIf() {}
 
-int E(){}
+int E() {}
 
 int main() {
     setbuf(stdout, NULL);
     FILE *entrada;
-    int teste2;
 
-    if ((entrada = fopen("/home/canu/carvi/cent/csin/fmiotto5/Área de Trabalho/entrada", "r")) == NULL) {
+    int i = 0;
+
+    //"/home/canu/carvi/cent/csin/fmiotto5/Área de Trabalho/saida"
+    //"/home/felipe/Área de Trabalho/saida"
+
+    if ((entrada = fopen("/home/felipe/Área de Trabalho/saida", "r")) == NULL) {
         printf("Arquivo não pode ser aberto\n");
         exit(1);
     }
+
+    while(1){ // passa todo o conteudo do arquivo pra um string
+        c = fgetc(entrada);
+        if (feof(entrada))
+            break;
+        if(c != 9 && c != 10 && c !=13){
+            st[i++] = c;
+        }
+        else if(c ==10){
+            st[i++] = 127;
+        }
+        else if(c ==9){
+            st[i++] = 9;
+        }
+    }
+    st[i] = '\0';
+
+    tk = leArquivo();
+
+    //if (ProgC() == 1)
+    //   printf("Reconhecimento sintático OK")
 
     return 0;
 }
