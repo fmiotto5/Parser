@@ -233,7 +233,7 @@ int E(){}
 int main() {
     setbuf(stdout, NULL);
     FILE *entrada;
-    int teste;
+    int teste2;
 
     if ((entrada = fopen("/home/canu/carvi/cent/csin/fmiotto5/Área de Trabalho/entrada", "r")) == NULL) {
         printf("Arquivo não pode ser aberto\n");
