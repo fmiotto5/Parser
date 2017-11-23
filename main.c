@@ -149,13 +149,13 @@ Acho que por enquanto é isso. Dá uma revisada na associatividade da parte de e
 
 char st[20000];
 char c;
-int tk = 0;
+int tk = 0, pos = 0;
 char lex[20];
 char linha[4], coluna[4];
 
 int leArquivo() {
     char tkAux[3];
-    int i = 0, pos = 0;
+    int i = 0;
     int posTk = 0;
     c = st[pos];
     pos++;
@@ -204,7 +204,7 @@ int leArquivo() {
     coluna[i] = '\0';
     i = 0;
 
-    while(c != '\n' && c != '\177'){
+    while(c != '\n' && c != '\177'){ // consome caracteres em excesso até achar nova linha
         c = st[pos];
         pos++;
         if (c=='\n')
@@ -214,7 +214,7 @@ int leArquivo() {
             printf("entrei \ 177");
     }
 
-    printf("tk %s, lex %s, linha %s, coluna %s",tkAux, lex, linha, coluna);
+    printf("tk %s, lex %s, linha %s, coluna %s\n",tkAux, lex, linha, coluna);
 }
 
 int ProgC() { //PROGC -> LD
@@ -328,6 +328,8 @@ int main() {
     st[i] = '\0';
 
     tk = leArquivo();
+    tk = leArquivo();
+
 
     //if (ProgC() == 1)
     //   printf("Reconhecimento sintático OK")
