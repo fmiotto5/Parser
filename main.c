@@ -1,57 +1,58 @@
 ///*
-// Oi Diogo,
-//Até agora a parte de comandos e funções está correta. Algum trabalho pela frente para fatorar e remover recursão à esquerda. Quanto à parte de expressões, tu tens que levar em consideração a associatividade dos operadores. O operador de atribuição (e todos os operadores reduzidos de atribuição) é associativo à direita, então a produção correspondente na gramática tem que ser recursiva à direita. E no ternário tu colocaste a possibilidade de aplicá-lo recursivamente só no primeiro operando. O segundo e o terceiro operandos do ternário não podem ser expressões com o ternário? E os operadores == e != são associativos à esquerda, então a recursão da produção deve ser à esquerda. E na produção dos operadores unários (E13), como ++, --, !, a produção deve ter só um não terminal.
-//Acho que por enquanto é isso. Dá uma revisada na associatividade da parte de expressões.
-//--- Diogo Manica escreveu ---
-//> Boa noite Cadinho, estou fazendo a gramatica do C para depois programar a parte sintatica...voce pode fazer algumas considerações sobre oque fiz até agora?
-//>
-//> PROGC -> LD
-//> LD -> DEC LD / DEC
-//> DEC -> DF / DV
-//> DV -> TIPO LI ;
-//> TIPO -> INT / FLOAT / CHAR / DOUBLE / ...
-//> LI -> id , LI / id
-//> DF -> TIPO id (LPF){CORPO}
-//> LPF -> TIPO id RLPF / ?
-//> RLPF -> ,TIPO id RLPF / ?
-//> CORPO -> LCD
-//> LCD -> COM LCD / DV LCD / ?
-//> COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / COMRETURN / break;
-//> COMIF -> if(E)COM RIF
-//> RIF -> else COM / ?
-//> E ->
-//>
-//>
-//> .....
-//>
-//> DF (declaração de função)
-//> DV (declaração de variável)
-//> LI (lista de identificadores)
-//> LPF (lista de parametros formais)
-//> LCD (lista de comandos e declarações)
-//> RIF (resto de if)
-//> E (expressão)
-//>
-//> .....em seguida a gramatica de E que eu desenvolvi ....segundo a tabela desse site da usp
-//>
-//> https://www.ime.usp.br/~pf/algoritmos/apend/precedence.html
-//>
-//> E -> E1 , E1 / E1
-//> E1 -> E1 = E2 / E1 *= E2 / E1 ÷= E2 / E1 %= E2 / E1 += E2 / E1 -= E2 / E2
-//> E2 -> E2 ? E3 : E3 / E3
-//> E3 -> E4 || E3 / E4
-//> E4 -> E5 && E4 / E5
-//> E5 -> E6 | E5 / E6
-//> E6 -> E7 ^ E6 / E7
-//> E7 -> E8 & E7 / E8
-//> E8 -> E9 == E8 / E9 != E8 / E9
-//> E9 -> E10 < E9 / E10 > E9 / E10 <= E9 / E10 >= E9 / E10
-//> E10 -> E11 << E10 / E11 >> E10 / E11
-//> E11 -> E12 + E11 / E12 - E11 / E12
-//> E12 -> E13 * E12 / E13 ÷ E12 / E13 % E12 / E13
-//> E13 -> E13 - E14 / E13 ++ E14 / E13 -- E14 / E13 ! E14 / E14
-//> E14 -> cte / id / id RE / RE
-//> RE -> (E14) / [E14] / ?
+//        PROGC -> LD
+//        LD -> DEC LD / DEC
+//        RLD -> LD / e
+//        DEC -> DF / DV
+//        DV -> TIPO LI ;
+//        TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RTIPOSINAL / short RTIPOSHORT / long RTIPOLONG
+//        RTIPOSINAL -> char / int / short RTIPOSINAL2 / long RTIPOSINAL2 / e
+//        RTIPOSINAL2 -> int
+//        RTIPOSHORT -> int / e
+//        RTIPOLONG -> int / double / long RTIPOLONG2 / e
+//        RTIPOLONG2 -> int / e
+//        LI -> if RLI
+//        RLI -> ,LI / e
+//        DF -> TIPO id (LP){CORPO}
+//        LP -> TIPO id RLP / e
+//        RLP -> ,TIPO id RLP / e
+//        CORPO -> LCD
+//        LCD -> COM LCD / DV LCD / e
+//        COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD}
+//
+//        COMIF -> if(E)COM RIF
+//        RIF -> else COM / e
+//
+//        COMFOR -> for(EIF;EIF;EIF)COM RFOR
+//        RFOR -> COM / e
+//        EIF -> E / e
+//
+//        COMWHILE -> while(E)COM RWHILE
+//        RWHILE -> COM / e
+//
+//        COMDOWHILE -> do COM RDOWHILE while(E);
+//        RDOWHILE -> COM / e
+//
+//        COMSWITCH -> switch(E) RSWITCH
+//        RSWITCH -> {case(cte): COM NEXTCASE} / case(cte): COM / default: COM
+//        NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
+//
+//        E -> E1 , E1 / E1
+//        E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
+//        E2 -> E2 ? E2 : E2 / E3
+//        E3 -> E3 || E4 / E4
+//        E4 -> E4 && E5 / E5
+//        E5 -> E5 | E6 / E6
+//        E6 -> E6 ^ E7 / E7
+//        E7 -> E7 & E8 / E8
+//        E8 -> E8 == E9 / E8 != E9 / E9
+//        E9 -> E9 < E10 / E9 > E10 / E9 <= E10 / E9 >= E10 / E10
+//        E10 -> E10 << E11 / E10 >> E11 / E11
+//        E11 -> E11 + E12 / E11 - E12 / E12
+//        E12 -> E12 * E13 / E12 ÷ E13 / E12 % E13 / E13
+//        E13 -> E14 - E13 / E14 ++ E13 / E14 -- E13 / E14 ! E13 / E14
+//        E14 -> cte / id / id RE / (E)
+//        RE -> (LP) / [E]X / e
+//        X -> [E]X / [E] / e
 //
 //
 //#define TKId 1
@@ -494,7 +495,6 @@ int palavra_reservada(char lex[]) {
 int le_token(char st[], char lex[]) {
     int estado = 0, fim = 0, posl = 0;
     posColuna = pos;
-//estado_anterior = 0;
     while (!fim) {
         char c = st[pos];
 
@@ -755,7 +755,6 @@ int le_token(char st[], char lex[]) {
                     posColuna = pos;
                     posl--;
                     subColuna -= 3;
-
                 }
                 if (c == '\0') return -1;
 
@@ -875,85 +874,255 @@ int le_token(char st[], char lex[]) {
     }
 }
 
-int ProgC() { //PROGC -> LD
-    if (LD() == 0)
+int PROGC() { // PROGC -> LD
+    if(LD == 0){
         return 0;
+    }
+
+    return 1;
 }
 
-int LD() { //LD -> DEC LD / DEC
-    if (Dec() == 0)
+int LD() { // LD -> DEC RLD
+    if(DEC == 0)
         return 0;
 
-    if (LD() == 0)
+    if(RLD() == 0)
         return 0;
+
+    return 1;
 }
 
-int Dec() { //DEC -> DF / DV
-    if (DV() == 0)
-        return 0;
+int RLD() { // RLD -> LD / e
+    if(LD == 0){
 
-    if (DV() == 0)
-        return 0;
+    }
+    return 1;
+}
+
+int DEC(){ // DEC -> DF / DV
+
 }
 
 int DV() { //DV -> TIPO LI ;
-    if (Tipo() == 0)
-        return 0;
-
-    if (LI() == 0)
-        return 0;
-
-    if (tk == TKPontoeVirg) {
-        //tk = le_token(exp1,lex);
-        return 1;
-    }
-}
-
-int
-Tipo() { // TIPO -> char / signed / signed char / unsigned / unsigned char / int / signed int / unsigned int / short / short int / signed short int / unsigned short int / long / long long / long long int / long int / signed long int / unsigned long int / float / double / long double
-    if (tk == TKChar) {
-        //tk = le_token(exp1,lex);
-        return 1;
-    }
-
-    if (tk == TKSigned) {
-        //tk = le_token(exp1,lex);
-        return 1;
-    }
-
-    if (tk == TKUnsigned) {
-        //tk = le_token(exp1,lex);
-        return 1;
-    }
-
-    if (tk == TKInt) {
-        //tk = le_token(exp1,lex);
-        return 1;
-    }
-
-    //...
 
 }
 
-int LI() {}
+int TIPO() { //TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RTIPOSINAL / short RTIPOSHORT / long RTIPOLONG
 
-int DF() {}
+}
 
-int LPF() {}
+int RTIPOSINAL() { //RTIPOSINAL -> char / int / short RTIPOSINAL2 / long RTIPOSINAL2 / e
 
-int RLPF() {}
+}
 
-int Corpo() {}
+int RTIPOSINAL2() { //RTIPOSINAL2 -> int
 
-int LCD() {}
+}
 
-int Com() {}
+int RTIPOSHORT() { //RTIPOSHORT -> int / e
 
-int ComIf() {}
+}
 
-int RIf() {}
+int RTIPOLONG() { //RTIPOLONG -> int / double / long RTIPOLONG2 / e
 
-int E() {}
+}
+
+int RTIPOLONG2() { //RTIPOLONG2 -> int / e
+
+}
+
+int LI() { //LI -> if RLI
+
+}
+
+int RLI() { //RLI -> ,LI / e
+
+}
+
+int DF() { //DF -> TIPO id (LP){CORPO}
+
+}
+
+int LP() { //LP -> TIPO id RLP / e
+
+}
+
+int RLP() { //RLP -> ,TIPO id RLP / e
+
+}
+
+int CORPO() { //CORPO -> LCD
+
+}
+
+int LCD() { //LCD -> COM LCD / DV LCD / e
+
+}
+
+int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD}
+
+}
+
+int COMIF() { //COMIF -> if(E)COM RIF
+
+}
+
+int RIF() { //RIF -> else COM / e
+
+}
+
+int COMFOR() { //COMFOR -> for(EIF;EIF;EIF)COM RFOR
+
+}
+
+int RFOR() { //RFOR -> COM / e
+
+}
+
+int EIF() { //EIF -> E / e
+
+}
+
+int COMWHILE() { //COMWHILE -> while(E)COM RWHILE
+
+}
+
+int RWHILE() { //RWHILE -> COM / e
+
+}
+
+int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
+
+}
+
+int RDOWHILE() { //RDOWHILE -> COM / e
+
+}
+
+int COMSWITCH(){ //COMSWITCH -> switch(E) RSWITCH
+
+}
+
+int RSWITCH() { //RSWITCH -> {case(cte): COM NEXTCASE} / case(cte): COM / default: COM
+
+}
+
+int NEXTCASE() { //NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
+
+}
+
+int E() { //E -> E1 , E1 / E1
+
+}
+
+int E1() { //E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
+
+}
+
+int E2() { // E2 -> E3E2'
+
+}
+
+int E2Linha() { // E2' -> ? E2 : E2 E2' / e
+
+}
+
+int E3() { //E3 -> E4E3'
+
+}
+
+int E3Linha() { //E3' -> || E4 E3' / e
+
+}
+
+int E4() { //E4 -> E5E4'
+
+}
+
+int E4Linha() { // E4' -> && E5 E4' / e
+
+}
+
+int E5() { // E5 -> E6E5'
+
+}
+
+int E5Linha() { // E5' -> | E6 E5' / e
+
+}
+
+int E6() { // E6 -> E7E6'
+
+}
+
+int E6Linha() { // E6' -> ^ E7 E6' / e
+
+}
+
+
+int E7() { // E7 -> E8E7'
+
+}
+
+int E7Linha() { //E7' -> & E8 E7' / e
+
+}
+
+int E8() { // E8 -> E9E8'
+
+}
+
+int E8Linha() { // E8' -> == E9 E8' / != E9 E8' / e
+
+}
+
+int E9()[ // E9 -> E10 E9'
+
+}
+
+int E9Linha() { // E9' -> < E10 E9' / > E10 E9' / <= E10 E9' / >= E10 E9' / e
+
+}
+
+int E10() { // E10 -> E11 E10'
+
+}
+
+int E10Linha() { // E10' -> << E11 E10' | >> E11 E10' / e
+
+}
+
+int E11() { // E11 -> E12 E11'
+
+}
+
+int E11Linha() { // E11' -> + E12 E11' / - E12 E11' / e
+
+}
+
+int E12() { // E12 -> E13 E12'
+
+}
+
+int E12Linha() {// E12' -> * E13 E12' / ÷ E13 E12' / % E13 E12' / e
+
+}
+
+int E13() { //E13 -> E14 - E13 / E14 ++ E13 / E14 -- E13 / E14 ! E13 / E14
+
+}
+
+int E14() { //E14 -> cte / id / id RE / (E)
+
+}
+
+int RE() { // RE -> (LP) / [E]X / e
+
+}
+
+int X() { // X -> [E]X / [E] / e
+
+}
 
 int main() {
     int tk, posParser = 0;
