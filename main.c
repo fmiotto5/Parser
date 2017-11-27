@@ -729,7 +729,7 @@ void getToken() {
     coluna = tksParser[posParser++];
 }
 
-void reposicionaParser(){
+void reposicionaToken(){
     //posParserAux -= 3;
     posParser = posParserAux - 3;
     tk = tksParser[posParser++];
@@ -743,7 +743,7 @@ int PROGC() { // PROGC -> LD
     if (LD())
         return 1;
     else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 
@@ -756,12 +756,12 @@ int LD() { // LD -> DEC RLD
         if(RLD())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     }
     else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -783,7 +783,7 @@ int DEC() { // DEC -> DF / DV
         return 1;
     }
     else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -798,16 +798,16 @@ int DV() { // DV -> TIPO LI ;
             }
             else{
                 printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         }
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else{
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -826,7 +826,7 @@ TIPO() { //TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RT
         if (RTIPOSINAL())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     }
@@ -836,7 +836,7 @@ TIPO() { //TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RT
         if (RTIPOSHORT())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     }
@@ -846,7 +846,7 @@ TIPO() { //TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RT
         if (RTIPOLONG())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     }
@@ -866,7 +866,7 @@ int RTIPOSINAL() { //RTIPOSINAL -> char / int / short RTIPOSINAL2 / long RTIPOSI
         if (RTIPOSINAL2())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else
@@ -902,7 +902,7 @@ int RTIPOLONG() { //RTIPOLONG -> int / double / long RTIPOLONG2 / e
         if (RTIPOLONG2())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else
@@ -925,7 +925,7 @@ int LI() { //LI -> id RLI
         if (RLI())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
@@ -942,7 +942,7 @@ int RLI() { //RLI -> ,LI / e
         if (LI())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else
@@ -968,39 +968,39 @@ int DF() { //DF -> TIPO id (LP){CORPO}
                                     return 1;
                                 } else {
                                     printf("Erro: esperava token '}' na linha %d coluna %d", linha, coluna);
-                                    reposicionaParser();
+                                    reposicionaToken();
                                     return 0;
                                 }
                             } else {
-                                reposicionaParser();
+                                reposicionaToken();
                                 return 0;
                             }
                         } else {
                             printf("Erro: esperava token '{' na linha %d coluna %d", linha, coluna);
-                            reposicionaParser();
+                            reposicionaToken();
                             return 0;
                         }
                     } else {
                         printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                        reposicionaParser();
+                        reposicionaToken();
                         return 0;
                     }
                 } else {
-                    reposicionaParser();
+                    reposicionaToken();
                     return 0;
                 }
             } else {
                 printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         } else {
             printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -1014,16 +1014,16 @@ int LP() { //LP -> TIPO id RLP / e
             if (RLP())
                 return 1;
             else {
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         } else {
             printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -1039,20 +1039,20 @@ int RLP() { //RLP -> ,TIPO id RLP / e
                 if (RLP())
                     return 1;
                 else {
-                    reposicionaParser();
+                    reposicionaToken();
                     return 0;
                 }
             } else {
                 printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         } else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -1063,7 +1063,7 @@ int CORPO() { //CORPO -> LCD
     if (CORPO())
         return 1;
     else {
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -1075,14 +1075,14 @@ int LCD() { //LCD -> COM LCD / DV LCD / e
         if (LCD())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else if (DV()) {
         if (LCD())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else
@@ -1098,7 +1098,7 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             return 1;
         } else {
             printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else if (COMWHILE())
@@ -1116,7 +1116,7 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             return 1;
         } else {
             printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else if (tk == TKBreak) {
@@ -1126,7 +1126,7 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             return 1;
         } else {
             printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else if (tk == TKAbreChave) {
@@ -1137,16 +1137,16 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
                 return 1;
             } else {
                 printf("Erro: esperava token '}' na linha %d coluna %d", linha, coluna);
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         } else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
         printf("Erro: esperava token 'return', 'break' ou '{' na linha %d coluna %d", linha, coluna);
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -1165,30 +1165,30 @@ int COMIF() { //COMIF -> if(E)COM RIF
                         if (RIF())
                             return 1;
                         else {
-                            reposicionaParser();
+                            reposicionaToken();
                             return 0;
                         }
                     } else {
-                        reposicionaParser();
+                        reposicionaToken();
                         return 0;
                     }
                 } else {
                     printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                    reposicionaParser();
+                    reposicionaToken();
                     return 0;
                 }
             } else {
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         } else {
             printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
         printf("Erro: esperava token 'if' na linha %d coluna %d", linha, coluna);
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
@@ -1201,7 +1201,7 @@ int RIF() { //RIF -> else COM / e
         if (COM())
             return 1;
         else {
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else
@@ -1228,48 +1228,48 @@ int COMFOR() { //COMFOR -> for(EIF;EIF;EIF)COM RFOR
                                         if (RFOR())
                                             return 1;
                                         else {
-                                            reposicionaParser();
+                                            reposicionaToken();
                                             return 0;
                                         }
                                     } else {
-                                        reposicionaParser();
+                                        reposicionaToken();
                                         return 0;
                                     }
                                 } else {
                                     printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                                    reposicionaParser();
+                                    reposicionaToken();
                                     return 0;
                                 }
                             } else {
-                                reposicionaParser();
+                                reposicionaToken();
                                 return 0;
                             }
                         } else {
                             printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-                            reposicionaParser();
+                            reposicionaToken();
                             return 0;
                         }
                     } else {
-                        reposicionaParser();
+                        reposicionaToken();
                         return 0;
                     }
                 } else {
                     printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-                    reposicionaParser();
+                    reposicionaToken();
                     return 0;
                 }
             } else {
-                reposicionaParser();
+                reposicionaToken();
                 return 0;
             }
         } else {
             printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            reposicionaParser();
+            reposicionaToken();
             return 0;
         }
     } else {
         printf("Erro: esperava token 'for' na linha %d coluna %d", linha, coluna);
-        reposicionaParser();
+        reposicionaToken();
         return 0;
     }
 }
