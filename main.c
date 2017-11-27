@@ -172,6 +172,7 @@ int posParser = 0;
 int posParserAux = 0;
 int tk = 0;
 int flag = 0;
+char msgErro[100];
 
 int PROGC();
 
@@ -797,7 +798,8 @@ int DV() { // DV -> TIPO LI ;
                 return 1;
             }
             else{
-                printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
+                //printf("Erro: esperava token ';' na linha %d coluna %d",linha,coluna);
+                strcpy(msgErro,"Erro: esperava token ';'");
                 reposicionaToken();
                 return 0;
             }
@@ -1023,8 +1025,7 @@ int LP() { //LP -> TIPO id RLP / e
             return 0;
         }
     } else {
-        reposicionaToken();
-        return 0;
+        return 1;
     }
 }
 
@@ -1060,7 +1061,7 @@ int RLP() { //RLP -> ,TIPO id RLP / e
 int CORPO() { //CORPO -> LCD
     posParserAux = posParser;
 
-    if (CORPO())
+    if (LCD())
         return 1;
     else {
         reposicionaToken();
@@ -1557,7 +1558,7 @@ int NEXTCASE() { //NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
 }
 
 int E() { //E -> E1 , E1 / E1
-
+return 0;
 }
 
 int E1() { //E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
@@ -1803,7 +1804,12 @@ int main() {
     //system("pause");
     posParser = 0;
     getToken();
-    if (PROGC() == 1)
-        printf("Reconhecimento sintático OK");
+
+    if (PROGC()) {
+        if(tk != -1)
+            printf("Erro: token inválido na linha %d coluna %d", linha, coluna);
+        else
+            printf("Reconhecimento sintático OK");
+    }
     getchar();
 }
