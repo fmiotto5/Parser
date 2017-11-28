@@ -35,7 +35,7 @@
 //        RSWITCH -> {case(cte): COM NEXTCASE} / case(cte): COM / default: COM
 //        NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
 //
-//        E -> E1 , E1 / E1
+//        E -> E1 , E / E1
 //        E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
 //        E2 -> E3E2'
 //        E2' -> ? E2 : E2 E2' / e
@@ -1610,7 +1610,7 @@ int NEXTCASE() { //NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
         return 1;
 }
 
-int E() { //E -> E1 , E1 / E1
+int E() { //E -> E1 , E / E1
 return 0;
 }
 
