@@ -1,70 +1,3 @@
-//        PROGC -> LD
-//        LD -> DEC RLD
-//        RLD -> LD / e
-//        DEC -> DF / DV
-//        DV -> TIPO LI ;
-//        TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RTIPOSINAL / short RTIPOSHORT / long RTIPOLONG
-//        RTIPOSINAL -> char / int / short RTIPOSINAL2 / long RTIPOSINAL2 / e
-//        RTIPOSINAL2 -> int
-//        RTIPOSHORT -> int / e
-//        RTIPOLONG -> int / double / long RTIPOLONG2 / e
-//        RTIPOLONG2 -> int / e
-//        LI -> if RLI
-//        RLI -> ,LI / e
-//        DF -> TIPO id (LP){CORPO}
-//        LP -> TIPO id RLP / e
-//        RLP -> ,TIPO id RLP / e
-//        CORPO -> LCD
-//        LCD -> COM LCD / DV LCD / e
-//        COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD}
-//
-//        COMIF -> if(E)COM RIF
-//        RIF -> else COM / e
-//
-//        COMFOR -> for(EIF;EIF;EIF)COM RFOR
-//        RFOR -> COM / e
-//        EIF -> E / e
-//
-//        COMWHILE -> while(E)COM RWHILE
-//        RWHILE -> COM / e
-//
-//        COMDOWHILE -> do COM RDOWHILE while(E);
-//        RDOWHILE -> COM / e
-//
-//        COMSWITCH -> switch(E) RSWITCH
-//        RSWITCH -> {case(cte): COM NEXTCASE} / case(cte): COM / default: COM
-//        NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
-//
-//        E -> E1 , E / E1
-//        E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
-//        E2 -> E3E2'
-//        E2' -> ? E2 : E2 E2' / e
-//        E3 -> E4E3'
-//        E3' -> || E4 E3' / e
-//        E4 -> E5E4'
-//        E4' -> && E5 E4' / e
-//        E5 -> E6E5'
-//        E5' -> | E6 E5' / e
-//        E6 -> E7E6'
-//        E6' -> ^ E7 E6' / e
-//        E7 -> E8E7'
-//        E7' -> & E8 E7' / e
-//        E8 -> E9E8'
-//        E8' -> == E9 E8' / != E9 E8' / e
-//        E9 -> E10 E9'
-//        E9' -> < E10 E9' / > E10 E9' / <= E10 E9' / >= E10 E9' / e
-//        E10 -> E11 E10'
-//        E10' -> << E11 E10' | >> E11 E10' / e
-//        E11 -> E12 E11'
-//        E11' -> + E12 E11' / - E12 E11' / e
-//        E12 -> E13 E12'
-//        E12' -> * E13 E12' / ÷ E13 E12' / % E13 E12' / e
-//        E13 -> E14 - E13 / E14 ++ E13 / E14 -- E13 / E14 ! E13 / E14
-//        E14 -> cte / id / id RE / (E)
-//        RE -> (LP) / [E]X / e
-//        X -> [E]X / [E] / e
-
-
 #define TKId 1
 
 //PALAVRAS RESERVADAS
@@ -105,10 +38,10 @@
 //CARACTERES EPSECIAIS //OPERADORES
 #define TKAbrePar 34        /* ( */
 #define TKFechaPar 35       /* ) */
-#define TKAbreChave 36      /* [ */
-#define TKFechaChave 37     /* ] */
-#define TKAbreColchete 38   /* { */
-#define TKFechaColchete 39  /* } */
+#define TKAbreChave 36      /* { */
+#define TKFechaChave 37     /* } */
+#define TKAbreColchete 38   /* [ */
+#define TKFechaColchete 39  /* ] */
 #define TKPontoeVirg 40     /* ; */
 #define TKDoisPontos 41     /* : */
 #define TKVirgula 42        /* , */
@@ -140,6 +73,9 @@
 #define TKShiftRight 66             /* >> */
 #define TKOU 67                     /* || */
 #define TKAND 68                    /* && */
+#define TKELogico 70                /* &  */
+#define TKOULogico 71               /* | */
+#define TKXOR 72                    /* ^ */
 
 
 //CONSTANTES
@@ -169,10 +105,8 @@ int coluna = 0;
 int tab = 0;
 int tksParser[1000];
 int posParser = 0;
-int posParserAux = 0;
 int tk = 0;
-int flag = 0;
-char msgErro[100];
+int doWhile = 0;
 
 int PROGC();
 
@@ -182,7 +116,11 @@ int RLD();
 
 int DEC();
 
+int RDEC();
+
 int DV();
+
+int RDV();
 
 int TIPO();
 
@@ -195,10 +133,6 @@ int RTIPOSHORT();
 int RTIPOLONG();
 
 int RTIPOLONG2();
-
-int LI();
-
-int RLI();
 
 int DF();
 
@@ -237,6 +171,8 @@ int RSWITCH();
 int NEXTCASE();
 
 int E();
+
+int ELinha();
 
 int E1();
 
@@ -569,6 +505,18 @@ int le_token(char st[], char lex[]) {
                     estado_anterior = 0;
                     return TKFechaChave;
                 }
+                if (c == '[') {
+                    lex[posl] = '\0';
+                    pos++;
+                    estado_anterior = 0;
+                    return TKAbreColchete;
+                }
+                if (c == ']') {
+                    lex[posl] = '\0';
+                    pos++;
+                    estado_anterior = 0;
+                    return TKFechaColchete;
+                }
                 if (c == ',') {
                     lex[posl] = '\0';
                     pos++;
@@ -708,7 +656,8 @@ int le_token(char st[], char lex[]) {
                     break;
                 }
                 lex[--posl] = '\0';
-                return TKConstOctal;
+                //return TKConstOctal;
+                return TKConstInt;
             case 9:
                 if (c >= '0' && c <= '9') {
                     pos++;
@@ -719,7 +668,8 @@ int le_token(char st[], char lex[]) {
                         return TKErroConstHexa;
                 }
                 lex[--posl] = '\0';
-                return TKConstHexa;
+                //return TKConstHexa;
+                return TKConstInt;
         }
     }
 }
@@ -730,138 +680,128 @@ void getToken() {
     coluna = tksParser[posParser++];
 }
 
-void reposicionaToken(){
-    //posParserAux -= 3;
-    posParser = posParserAux - 3;
-    tk = tksParser[posParser++];
-    linha = tksParser[posParser++];
-    coluna = tksParser[posParser++];
-}
-
 int PROGC() { // PROGC -> LD
-    posParserAux = posParser;
 
     if (LD())
         return 1;
-    else {
-        reposicionaToken();
+    else
         return 0;
-    }
-
 }
 
 int LD() { // LD -> DEC RLD
-    posParserAux = posParser;
-
-    if(DEC()){
-        if(RLD())
+    if (DEC()) {
+        if (RLD())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
-    }
-    else {
-        reposicionaToken();
+    } else
         return 0;
-    }
 }
 
 int RLD() { // RLD -> LD / e
     if (LD())
         return 1;
-    else {
+    else
         return 1;
-    }
 }
 
-int DEC() { // DEC -> DF / DV
-    posParserAux = posParser;
+int DEC() { // DEC -> TIPO id RDEC
+    if (TIPO()) {
+        if (tk == TKId) {
+            getToken();
+            if (RDEC())
+                return 1;
+            else
+                return 0;
+        } else {
+            printf("Erro: esperava token 'id' na linha %d coluna %d\n", linha, coluna);
+            return 0;
+        }
+    } else
+        return 0;
+}
 
-    if (DF())
+int RDEC() { // RDEC -> ,DV / (DF / ;
+    if (tk == TKVirgula) {
+        getToken();
+        if (DV())
+            return 1;
+        else
+            return 0;
+    } else if (tk == TKAbrePar) {
+        getToken();
+        if (DF())
+            return 1;
+        else
+            return 0;
+    } else if (tk == TKPontoeVirg) {
+        getToken();
         return 1;
-    else if (DV()) {
-        return 1;
-    }
-    else {
-        reposicionaToken();
+    } else {
+        printf("esperava , ou ; ou )");
+        printf("Erro: esperava token ';', ')' ou ',' na linha %d coluna %d\n", linha, coluna);
         return 0;
     }
 }
 
-int DV() { // DV -> TIPO LI ;
-    posParserAux = posParser;
-
-    if(TIPO()){
-        if(LI()){
-            if(tk == TKPontoeVirg){
-                getToken();
-                return 1;
-            }
-            else{
-                //printf("Erro: esperava token ';' na linha %d coluna %d",linha,coluna);
-                strcpy(msgErro,"Erro: esperava token ';'");
-                reposicionaToken();
-                return 0;
-            }
-        }
-        else {
-            reposicionaToken();
+int DV() { // DV -> id RDV
+    if (tk == TKId) {
+        getToken();
+        if (RDV())
+            return 1;
+        else
             return 0;
-        }
-    } else{
-        reposicionaToken();
+    } else {
+        printf("Erro: esperava token 'id' na linha %d coluna %d\n", linha, coluna);
+        return 0;
+    }
+}
+
+int RDV() { // RDV -> ,DV / ;
+    if (tk == TKVirgula) {
+        getToken();
+        if (DV())
+            return 1;
+        else
+            return 0;
+    } else if (tk == TKPontoeVirg) {
+        getToken();
+        return 1;
+    } else {
+        printf("Erro: esperava token ',' ou ';' na linha %d coluna %d\n", linha, coluna);
         return 0;
     }
 }
 
 int
 TIPO() { //TIPO -> char / int / float / double / signed RTIPOSINAL / unsigned RTIPOSINAL / short RTIPOSHORT / long RTIPOLONG
-    posParserAux = posParser;
-
     if (tk == TKChar || tk == TKInt || tk == TKFloat || tk == TKDouble) {
         getToken();
         return 1;
-    }
-
-    if (tk == TKSigned || tk == TKUnsigned) {
+    } else if (tk == TKSigned || tk == TKUnsigned) {
         getToken();
         if (RTIPOSINAL())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
-    }
-
-    if (tk == TKShort) {
+    } else if (tk == TKShort) {
         getToken();
         if (RTIPOSHORT())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
-    }
-
-    if (tk == TKLong) {
+    } else if (tk == TKLong) {
         getToken();
         if (RTIPOLONG())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
+    } else {
+        return 0;
     }
-
-//    printf("Erro: esperava tipo primitivo de variável na linha %d coluna %d", linha, coluna);
-    strcpy(msgErro,"Erro: esperava tipo primitivo de variavel");
-    return 0;
 }
 
 int RTIPOSINAL() { //RTIPOSINAL -> char / int / short RTIPOSINAL2 / long RTIPOSINAL2 / e
-    posParserAux = posParser;
-
     if (tk == TKChar || tk == TKInt) {
         getToken();
         return 1;
@@ -869,10 +809,8 @@ int RTIPOSINAL() { //RTIPOSINAL -> char / int / short RTIPOSINAL2 / long RTIPOSI
         getToken();
         if (RTIPOSINAL2())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
     } else
         return 1;
 }
@@ -882,9 +820,7 @@ int RTIPOSINAL2() { //RTIPOSINAL2 -> int
         getToken();
         return 1;
     } else {
-//        printf("Erro: esperava token 'int' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'int'");
-
+        printf("Erro: esperava token 'int' na linha %d coluna %d\n", linha, coluna);
         return 0;
     }
 }
@@ -898,8 +834,6 @@ int RTIPOSHORT() { //RTIPOSHORT -> int / e
 }
 
 int RTIPOLONG() { //RTIPOLONG -> int / double / long RTIPOLONG2 / e
-    posParserAux = posParser;
-
     if (tk == TKInt || tk == TKDouble) {
         getToken();
         return 1;
@@ -907,10 +841,8 @@ int RTIPOLONG() { //RTIPOLONG -> int / double / long RTIPOLONG2 / e
         getToken();
         if (RTIPOLONG2())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
     } else
         return 1;
 }
@@ -923,126 +855,51 @@ int RTIPOLONG2() { //RTIPOLONG2 -> int / e
         return 1;
 }
 
-int LI() { //LI -> id RLI
-    posParserAux = posParser;
-
-    if (tk == TKId) {
-        getToken();
-        if (RLI())
-            return 1;
-        else {
-            reposicionaToken();
+int DF() { // DF -> LP){CORPO}
+    if (LP()) {
+        if (tk == TKFechaPar) {
+            getToken();
+            if (tk == TKAbreChave) {
+                getToken();
+                if (CORPO()) {
+                    if (tk == TKFechaChave) {
+                        getToken();
+                        return 1;
+                    } else {
+                        printf("Erro: esperava token '}' na linha %d coluna %d\n", linha, coluna);
+                        return 0;
+                    }
+                } else
+                    return 0;
+            } else {
+                printf("Erro: esperava token '{' na linha %d coluna %d\n", linha, coluna);
+                return 0;
+            }
+        } else {
+            printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    } else {
-//        printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'id'");
+    } else
         return 0;
-    }
 }
 
-int RLI() { //RLI -> ,LI / e
-    posParserAux = posParser;
-
-    if (tk == TKVirgula) {
-        getToken();
-        if (LI())
-            return 1;
-        else {
-            reposicionaToken();
+int LP() { //LP -> TIPO id RLP / e
+    if (TIPO()) {
+        if (tk == TKId) {
+            getToken();
+            if (RLP())
+                return 1;
+            else
+                return 0;
+        } else {
+            printf("Erro: esperava token 'id' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else
         return 1;
 }
 
-int DF() { //DF -> TIPO id (LP){CORPO}
-    posParserAux = posParser;
-
-    if (TIPO()) {
-        if (tk == TKId) {
-            getToken();
-            if (tk == TKAbrePar) {
-                getToken();
-                if (LP()) {
-                    if (tk == TKFechaPar) {
-                        getToken();
-                        if (tk == TKAbreChave) {
-                            getToken();
-                            if (CORPO()) {
-                                if (tk == TKFechaChave) {
-                                    getToken();
-                                    return 1;
-                                } else {
-//                                    printf("Erro: esperava token '}' na linha %d coluna %d", linha, coluna);
-                                    strcpy(msgErro,"Erro: esperava token '}'");
-                                    reposicionaToken();
-                                    return 0;
-                                }
-                            } else {
-                                reposicionaToken();
-                                return 0;
-                            }
-                        } else {
-//                            printf("Erro: esperava token '{' na linha %d coluna %d", linha, coluna);
-                            strcpy(msgErro,"Erro: esperava token '{'");
-                            reposicionaToken();
-                            return 0;
-                        }
-                    } else {
-//                        printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                        strcpy(msgErro,"Erro: esperava token ')'");
-                        reposicionaToken();
-                        return 0;
-                    }
-                } else {
-                    reposicionaToken();
-                    return 0;
-                }
-            } else {
-//                printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-                strcpy(msgErro,"Erro: esperava token '('");
-                reposicionaToken();
-                return 0;
-            }
-        } else {
-//            printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token 'id'");
-            reposicionaToken();
-            return 0;
-        }
-    } else {
-        reposicionaToken();
-        return 0;
-    }
-}
-
-int LP() { //LP -> TIPO id RLP / e
-    posParserAux = posParser;
-
-    if (TIPO()) {
-        if (tk == TKId) {
-            getToken();
-            if (RLP())
-                return 1;
-            else {
-                reposicionaToken();
-                return 0;
-            }
-        } else {
-//            printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token 'id'");
-            reposicionaToken();
-            return 0;
-        }
-    } else {
-        return 1;
-    }
-}
-
 int RLP() { //RLP -> ,TIPO id RLP / e
-    posParserAux = posParser;
-
     if (tk == TKVirgula) {
         getToken();
         if (TIPO()) {
@@ -1050,72 +907,55 @@ int RLP() { //RLP -> ,TIPO id RLP / e
                 getToken();
                 if (RLP())
                     return 1;
-                else {
-                    reposicionaToken();
+                else
                     return 0;
-                }
             } else {
-//                printf("Erro: esperava token 'id' na linha %d coluna %d", linha, coluna);
-                strcpy(msgErro,"Erro: esperava token 'id'");
-                reposicionaToken();
+                printf("Erro: esperava token 'id' na linha %d coluna %d\n", linha, coluna);
                 return 0;
             }
-        } else {
-            reposicionaToken();
+        } else
             return 0;
-        }
-    } else {
-        reposicionaToken();
-        return 0;
-    }
+    } else
+        return 1;
 }
 
 int CORPO() { //CORPO -> LCD
-    posParserAux = posParser;
-
     if (LCD())
         return 1;
-    else {
-        reposicionaToken();
+    else
         return 0;
-    }
 }
 
-int LCD() { //LCD -> COM LCD / DV LCD / e
-    posParserAux = posParser;
-
+int LCD() { //LCD -> COM LCD / TIPO DV LCD / e
     if (COM()) {
         if (LCD())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
-    } else if (DV()) {
-        if (LCD())
-            return 1;
-        else {
-            reposicionaToken();
+    } else if (TIPO()) {
+        if (DV()) {
+            if (LCD())
+                return 1;
+            else
+                return 0;
+        } else
             return 0;
-        }
     } else
         return 1;
 }
 
 int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD}
-    posParserAux = posParser;
-
     if (E()) {
         if (tk == TKPontoeVirg) {
             getToken();
             return 1;
         } else {
-//            printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token ';'");
-            reposicionaToken();
+            printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else if (COMWHILE())
+        return 1;
+    else if (COMDOWHILE())
         return 1;
     else if (COMIF())
         return 1;
@@ -1129,9 +969,7 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             getToken();
             return 1;
         } else {
-//            printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token ';'");
-            reposicionaToken();
+            printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else if (tk == TKBreak) {
@@ -1140,9 +978,7 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             getToken();
             return 1;
         } else {
-//            printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token ';'");
-            reposicionaToken();
+            printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else if (tk == TKAbreChave) {
@@ -1152,26 +988,17 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
                 getToken();
                 return 1;
             } else {
-//                printf("Erro: esperava token '}' na linha %d coluna %d", linha, coluna);
-                strcpy(msgErro,"Erro: esperava token '}'");
-                reposicionaToken();
+                printf("Erro: esperava token '}' na linha %d coluna %d\n", linha, coluna);
                 return 0;
             }
-        } else {
-            reposicionaToken();
+        } else
             return 0;
-        }
     } else {
-//        printf("Erro: esperava token 'return', 'break' ou '{' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'return', 'break' ou '{'");
-        reposicionaToken();
         return 0;
     }
 }
 
 int COMIF() { //COMIF -> if(E)COM RIF
-    posParserAux = posParser;
-
     if (tk == TKIf) {
         getToken();
         if (tk == TKAbrePar) {
@@ -1182,56 +1009,37 @@ int COMIF() { //COMIF -> if(E)COM RIF
                     if (COM()) {
                         if (RIF())
                             return 1;
-                        else {
-                            reposicionaToken();
+                        else
                             return 0;
-                        }
-                    } else {
-                        reposicionaToken();
+                    } else
                         return 0;
-                    }
                 } else {
-//                    printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token ')'");
-                    reposicionaToken();
+                    printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
-            } else {
-                reposicionaToken();
+            } else
                 return 0;
-            }
         } else {
-//            printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token '('");
-            reposicionaToken();
+            printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else {
-//        printf("Erro: esperava token 'if' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'if'");
-        reposicionaToken();
         return 0;
     }
 }
 
 int RIF() { //RIF -> else COM / e
-    posParserAux = posParser;
-
     if (tk == TKElse) {
         getToken();
         if (COM())
             return 1;
-        else {
-            reposicionaToken();
+        else
             return 0;
-        }
     } else
         return 1;
 }
 
 int COMFOR() { //COMFOR -> for(EIF;EIF;EIF)COM RFOR
-    posParserAux = posParser;
-
     if (tk == TKFor) {
         getToken();
         if (tk == TKAbrePar) {
@@ -1248,54 +1056,34 @@ int COMFOR() { //COMFOR -> for(EIF;EIF;EIF)COM RFOR
                                     if (COM()) {
                                         if (RFOR())
                                             return 1;
-                                        else {
-                                            reposicionaToken();
+                                        else
                                             return 0;
-                                        }
-                                    } else {
-                                        reposicionaToken();
+                                    } else
                                         return 0;
-                                    }
                                 } else {
-//                                    printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                                    strcpy(msgErro,"Erro: esperava token ')'");
-                                    reposicionaToken();
+                                    printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
                                     return 0;
                                 }
-                            } else {
-                                reposicionaToken();
+                            } else
                                 return 0;
-                            }
                         } else {
-//                            printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-                            strcpy(msgErro,"Erro: esperava token ';'");
-                            reposicionaToken();
+                            printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
                             return 0;
                         }
-                    } else {
-                        reposicionaToken();
+                    } else
                         return 0;
-                    }
                 } else {
-//                    printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token ';'");
-                    reposicionaToken();
+                    printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
-            } else {
-                reposicionaToken();
+            } else
                 return 0;
-            }
         } else {
-//            printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token '('");
-            reposicionaToken();
+            printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else {
-//        printf("Erro: esperava token 'for' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'for'");
-        reposicionaToken();
+        //        printf("Erro: esperava token 'for' na linha %d coluna %d\n", linha, coluna);
         return 0;
     }
 }
@@ -1315,7 +1103,7 @@ int EIF() { //EIF -> E / e
 }
 
 int COMWHILE() { //COMWHILE -> while(E)COM RWHILE
-    if (tk == TKWhile) {
+    if (tk == TKWhile && doWhile != 1) {
         getToken();
         if (tk == TKAbrePar) {
             getToken();
@@ -1330,20 +1118,16 @@ int COMWHILE() { //COMWHILE -> while(E)COM RWHILE
                     } else
                         return 0;
                 } else {
-//                    printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token ')'");
+                    printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
             }
             return 0;
         } else {
-//            printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token '('");
+            printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else {
-//        printf("Erro: esperava token 'while' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'while'");
         return 0;
     }
 }
@@ -1357,6 +1141,7 @@ int RWHILE() { //RWHILE -> COM / e
 
 int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
     if (tk == TKDo) {
+        doWhile = 1;
         getToken();
         if (COM()) {
             if (RDOWHILE()) {
@@ -1367,28 +1152,26 @@ int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
                         if (E()) {
                             if (tk == TKFechaPar) {
                                 getToken();
-                                if (tk == TKPontoeVirg)
+                                if (tk == TKPontoeVirg) {
+                                    getToken();
+                                    doWhile = 0;
                                     return 1;
+                                }
                                 else {
-//                                    printf("Erro: esperava token ';' na linha %d coluna %d", linha, coluna);
-                                    strcpy(msgErro,"Erro: esperava token ';'");
-                                    return 0;
+                                    printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
                                 }
                             } else {
-//                                printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                                strcpy(msgErro,"Erro: esperava token ')'");
+                                printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
                                 return 0;
                             }
                         } else
                             return 0;
                     } else {
-//                        printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-                        strcpy(msgErro,"Erro: esperava token '('");
+                        printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
                         return 0;
                     }
                 } else {
-//                    printf("Erro: esperava token 'while' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token 'while'");
+                    printf("Erro: esperava token 'while' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
             } else
@@ -1396,8 +1179,6 @@ int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
         } else
             return 0;
     } else {
-//        printf("Erro: esperava token 'do' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'do'");
         return 0;
     }
 }
@@ -1422,111 +1203,73 @@ int COMSWITCH() { //COMSWITCH -> switch(E) RSWITCH
                     else
                         return 0;
                 } else {
-//                    printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token ')'");
+                    printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
             } else
                 return 0;
         } else {
-//            printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token '('");
+            printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else {
-//        printf("Erro: esperava token 'switch' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token 'switch'");
         return 0;
     }
 }
 
-int RSWITCH() { //RSWITCH -> {case(cte): COM NEXTCASE} / case(cte): COM / default: COM
+int RSWITCH() { //RSWITCH -> {case cte: COM NEXTCASE} / case cte: COM / default: COM
     if (tk == TKAbreChave) {
         getToken();
         if (tk == TKCase) {
             getToken();
-            if (tk == TKAbrePar) {
-                getToken();
-                if (tk == TKConstInt) {
-                    getToken();
-                    if (tk == TKFechaPar) {
-                        getToken();
-                        if (tk == TKDoisPontos) {
-                            getToken();
-                            if (COM()) {
-                                if (NEXTCASE()) {
-                                    if (tk == TKFechaChave) {
-                                        getToken();
-                                        return 1;
-                                    } else {
-//                                        printf("Erro: esperava token '}' na linha %d coluna %d", linha, coluna);
-                                        strcpy(msgErro,"Erro: esperava token '}'");
-                                        return 0;
-                                    }
-                                } else
-                                    return 0;
-                            } else
-                                return 0;
-                        } else {
-//                            printf("Erro: esperava token ':' na linha %d coluna %d", linha, coluna);
-                            strcpy(msgErro,"Erro: esperava token ':'");
-                            return 0;
-                        }
-                    } else {
-//                        printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                        strcpy(msgErro,"Erro: esperava token ')'");
-                        return 0;
-                    }
-                } else {
-//                    printf("Erro: esperava constante inteira na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava constante inteira");
-                    return 0;
-                }
-            } else {
-//                printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-                strcpy(msgErro,"Erro: esperava token '('");
-                return 0;
-            }
-        } else {
-//            printf("Erro: esperava token 'case' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token 'case'");
-            return 0;
-        }
-    } else if (tk == TKCase) {
-        getToken();
-        if (tk == TKAbrePar) {
-            getToken();
             if (tk == TKConstInt) {
                 getToken();
-                if (tk == TKFechaPar) {
+                if (tk == TKDoisPontos) {
                     getToken();
-                    if (tk == TKDoisPontos) {
-                        getToken();
-                        if (COM())
-                            return 1;
-                        else
+                    if (COM()) {
+                        if (NEXTCASE()) {
+                            if (tk == TKFechaChave) {
+                                getToken();
+                                return 1;
+                            } else {
+                                printf("Erro: esperava token '}' na linha %d coluna %d\n", linha, coluna);
+                                return 0;
+                            }
+                        } else
                             return 0;
-                    } else {
-//                        printf("Erro: esperava token ':' na linha %d coluna %d", linha, coluna);
-                        strcpy(msgErro,"Erro: esperava token ':'");
+                    } else
                         return 0;
-                    }
                 } else {
-//                    printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token ')'");
+                    printf("Erro: esperava token ':' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
             } else {
-//                printf("Erro: esperava constante inteira na linha %d coluna %d", linha, coluna);
-                strcpy(msgErro,"Erro: esperava constante inteira");
+                printf("Erro: esperava constante inteira na linha %d coluna %d\n", linha, coluna);
                 return 0;
             }
         } else {
-//            printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token '('");
+            printf("Erro: esperava token 'case' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    } else if (tk == TKDefault) {
+    } else if (tk == TKCase) { // case(cte): COM
+        getToken();
+        if (tk == TKConstInt) {
+            getToken();
+            if (tk == TKDoisPontos) {
+                getToken();
+                if (COM())
+                    return 1;
+                else
+                    return 0;
+            } else {
+                printf("Erro: esperava token ':' na linha %d coluna %d\n", linha, coluna);
+                return 0;
+            }
+        } else {
+            printf("Erro: esperava constante inteira na linha %d coluna %d\n", linha, coluna);
+            return 0;
+        }
+    } else if (tk == TKDefault) { // default: COM
         getToken();
         if (tk == TKDoisPontos) {
             getToken();
@@ -1535,192 +1278,528 @@ int RSWITCH() { //RSWITCH -> {case(cte): COM NEXTCASE} / case(cte): COM / defaul
             else
                 return 0;
         } else {
-//            printf("Erro: esperava token ':' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token ':'");
+            printf("Erro: esperava token ':' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
     } else {
-//        printf("Erro: esperava token '{', 'case' ou 'default' na linha %d coluna %d", linha, coluna);
-        strcpy(msgErro,"Erro: esperava token '{', 'case' ou 'default'");
+        printf("Erro: esperava token '{', 'case' ou 'default' na linha %d coluna %d\n", linha, coluna);
         return 0;
-
     }
 }
 
-int NEXTCASE() { //NEXTCASE -> case(cte): COM NEXTCASE/ default: COM / e
-    if(tk == TKCase){
+int NEXTCASE() { //NEXTCASE -> case cte: COM NEXTCASE/ default: COM / e
+    if (tk == TKCase) {
         getToken();
-        if(tk == TKAbrePar){
+        if (tk == TKConstInt) {
             getToken();
-            if(tk == TKConstInt){
+            if (tk == TKDoisPontos) {
                 getToken();
-                if(tk == TKFechaPar){
-                    getToken();
-                    if(tk == TKDoisPontos){
-                        getToken();
-                        if(COM()){
-                            if(NEXTCASE())
-                                return 1;
-                            else
-                                return 0;
-                        }
-                        else
-                            return 0;
-                    }
-                    else{
-//                        printf("Erro: esperava token ':' na linha %d coluna %d", linha, coluna);
-                        strcpy(msgErro,"Erro: esperava token ':'");
+                if (COM()) {
+                    if (NEXTCASE())
+                        return 1;
+                    else
                         return 0;
-                    }
-                }
-                else{
-//                    printf("Erro: esperava token ')' na linha %d coluna %d", linha, coluna);
-                    strcpy(msgErro,"Erro: esperava token ')'");
+                } else
                     return 0;
-                }
-            }
-            else{
-//                printf("Erro: esperava constante inteira na linha %d coluna %d", linha, coluna);
-                strcpy(msgErro,"Erro: esperava constante inteira");
+            } else {
+                printf("Erro: esperava token ':' na linha %d coluna %d\n", linha, coluna);
                 return 0;
             }
-        }
-        else{
-//            printf("Erro: esperava token '(' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token '('");
+        } else {
+            printf("Erro: esperava constante inteira na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    }
-    else if(tk == TKDefault){
+    } else if (tk == TKDefault) { // default: COM
         getToken();
-        if(tk == TKDoisPontos){
+        if (tk == TKDoisPontos) {
             getToken();
-            if(COM())
+            if (COM())
                 return 1;
             else
                 return 0;
-        }
-        else{
-//            printf("Erro: esperava token ':' na linha %d coluna %d", linha, coluna);
-            strcpy(msgErro,"Erro: esperava token ':'");
+        } else {
+            printf("Erro: esperava token ':' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    }
-    else
+    } else
         return 1;
 }
 
-int E() { //E -> E1 , E / E1
-return 0;
+int E() { // E -> E1 E'
+    if (E1()) {
+        if (ELinha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
-int E1() { //E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
+int ELinha() { // E' -> ,E1 E' / e
+    if (tk == TKVirgula) {
+        getToken();
+        if (E1()) {
+            if (ELinha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
+}
 
+int E1() { // E1 -> E2 = E1 / E2 *= E1 / E2 ÷= E1 / E2 %= E1 / E2 += E1 / E2 -= E1 / E2
+    if (E2()) {
+        if (tk == TKAtrib) {
+            getToken();
+            if (E1())
+                return 1;
+            else
+                return 0;
+        } else if (tk == TKMultiplicacaoIgual) {
+            getToken();
+            if (E1())
+                return 1;
+            else
+                return 0;
+        } else if (tk == TKDivisaoIgual) {
+            getToken();
+            if (E1())
+                return 1;
+            else
+                return 0;
+        } else if (tk == TKRestoDivisaoIgual) {
+            getToken();
+            if (E1())
+                return 1;
+            else
+                return 0;
+        } else if (tk == TKMaisIgual) {
+            getToken();
+            if (E1())
+                return 1;
+            else
+                return 0;
+        } else if (tk == TKMenosIgual) {
+            getToken();
+            if (E1())
+                return 1;
+            else
+                return 0;
+        } else
+            return 1;
+    }
 }
 
 int E2() { // E2 -> E3E2'
-
+    if (E3()) {
+        if (E2Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E2Linha() { // E2' -> ? E2 : E2 E2' / e
-
+    if (tk == TKTernario) {
+        getToken();
+        if (E2()) {
+            if (tk == TKDoisPontos) {
+                getToken();
+                if (E2()) {
+                    if (E2Linha())
+                        return 1;
+                    else
+                        return 0;
+                } else
+                    return 0;
+            } else {
+                printf("Erro: esperava token ':' na linha %d coluna %d\n", linha, coluna);
+                return 0;
+            }
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
-int E3() { //E3 -> E4E3'
-
+int E3() { // E3 -> E4E3'
+    if (E4()) {
+        if (E3Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
-int E3Linha() { //E3' -> || E4 E3' / e
-
+int E3Linha() { // E3' -> || E4 E3' / e
+    if (tk == TKOU) {
+        getToken();
+        if (E4()) {
+            if (E3Linha())
+                return 1;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E4() { //E4 -> E5E4'
-
+    if (E5()) {
+        if (E4Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E4Linha() { // E4' -> && E5 E4' / e
-
+    if (tk == TKAND) {
+        getToken();
+        if (E5()) {
+            if (E4Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 1;
+    } else
+        return 1;
 }
 
 int E5() { // E5 -> E6E5'
-
+    if (E6()) {
+        if (E5Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E5Linha() { // E5' -> | E6 E5' / e
-
+    if (tk == TKOULogico) {
+        getToken();
+        if (E6()) {
+            if (E5Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E6() { // E6 -> E7E6'
-
+    if (E7()) {
+        if (E6Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E6Linha() { // E6' -> ^ E7 E6' / e
-
+    if (tk == TKXOR) {
+        getToken();
+        if (E7()) {
+            if (E6Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 
 int E7() { // E7 -> E8E7'
-
+    if (E8()) {
+        if (E7Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E7Linha() { //E7' -> & E8 E7' / e
-
+    if (tk == TKELogico) {
+        getToken();
+        if (E8()) {
+            if (E7Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E8() { // E8 -> E9E8'
-
+    if (E9()) {
+        if (E8Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E8Linha() { // E8' -> == E9 E8' / != E9 E8' / e
-
+    if (tk == TKComparadorIgual) {
+        getToken();
+        if (E9()) {
+            if (E8Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKComparadorDiferente) {
+        getToken();
+        if (E9()) {
+            if (E8Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E9() { // E9 -> E10 E9'
-
+    if (E10()) {
+        if (E9Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E9Linha() { // E9' -> < E10 E9' / > E10 E9' / <= E10 E9' / >= E10 E9' / e
-
+    if (tk == TKMenor) {
+        getToken();
+        if (E10()) {
+            if (E9Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKMaior) {
+        getToken();
+        if (E10()) {
+            if (E9Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKComparadorMenorIgual) {
+        getToken();
+        if (E10()) {
+            if (E9Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKComparadorMaiorIgual) {
+        getToken();
+        if (E10()) {
+            if (E9Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E10() { // E10 -> E11 E10'
-
+    if (E11()) {
+        if (E10Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E10Linha() { // E10' -> << E11 E10' | >> E11 E10' / e
-
+    if (tk == TKShiftLeft) {
+        getToken();
+        if (E11()) {
+            if (E10Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKShiftRight) {
+        getToken();
+        if (E11()) {
+            if (E10Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E11() { // E11 -> E12 E11'
-
+    if (E12()) {
+        if (E11Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E11Linha() { // E11' -> + E12 E11' / - E12 E11' / e
-
+    if (tk == TKMais) {
+        getToken();
+        if (E12()) {
+            if (E11Linha())
+                return 1;
+            else
+                return 0;
+        }
+    } else if (tk == TKMenos) {
+        getToken();
+        if (E12()) {
+            if (E11Linha())
+                return 1;
+            else
+                return 0;
+        }
+    } else
+        return 1;
 }
 
 int E12() { // E12 -> E13 E12'
-
+    if (E13()) {
+        if (E12Linha())
+            return 1;
+        else
+            return 0;
+    } else
+        return 0;
 }
 
 int E12Linha() {// E12' -> * E13 E12' / ÷ E13 E12' / % E13 E12' / e
-
+    if (tk == TKMultiplicacao) {
+        getToken();
+        if (E13()) {
+            if (E12Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKDivisao) {
+        getToken();
+        if (E13()) {
+            if (E12Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else if (tk == TKRestoDivisao) {
+        getToken();
+        if (E13()) {
+            if (E12Linha())
+                return 1;
+            else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int E13() { //E13 -> E14 - E13 / E14 ++ E13 / E14 -- E13 / E14 ! E13 / E14
-
+    // testando com E13 -> E14 - E13 / E14 ++ / E14 -- / E14 ! E13 / E14
+    if (E14()) {
+        if (tk == TKMenos) {
+            getToken();
+            if (E13())
+                return 1;
+            else
+                return 0;
+        } else if (tk == TKMaisMais) {
+            getToken();
+            return 1;
+        } else if (tk == TKMenosMenos) {
+            getToken();
+            return 1;
+        } else if (tk == TKNegacao) {
+            getToken();
+            if (E13())
+                return 1;
+            else
+                return 0;
+        } else
+            return 1;
+    }
+    return 0;
 }
 
-int E14() { //E14 -> cte / id / id RE / (E)
-
+int E14() { // E14 -> cte / id RE / (E)
+    if (tk == TKConstInt) {
+        getToken();
+        return 1;
+    } else if (tk == TKId) {
+        getToken();
+        if (RE())
+            return 1;
+        else
+            return 0;
+    } else if (tk == TKAbrePar) {
+        getToken();
+        if (E()) {
+            if (tk == TKFechaPar) {
+                getToken();
+                return 1;
+            } else
+                return 0;
+        } else
+            return 0;
+    } else
+        return 0;
 }
 
-int RE() { // RE -> (LP) / [E]X / e
-
-}
-
-int X() { // X -> [E]X / [E] / e
-
+int RE() { // RE -> (LP) / e
+    if (tk == TKAbrePar) {
+        getToken();
+        if (LP()) {
+            if (tk == TKFechaPar) {
+                getToken();
+                return 1;
+            } else {
+                printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
+                return 0;
+            }
+        } else
+            return 0;
+    } else
+        return 1;
 }
 
 int main() {
@@ -1761,9 +1840,6 @@ int main() {
     }
 
     while ((tk = le_token(exp1, lex)) != -1) {
-        /*printf("posColuna: %d\n", posColuna);
-        printf("subColuna: %d\n", subColuna);
-        printf("pos: %d\n", pos);*/
 
         coluna = posColuna - subColuna;
         char linhaSt[3];
@@ -1851,22 +1927,15 @@ int main() {
         tksParser[posParser++] = coluna;
     }
 
-
     fclose(entrada);
     fclose(saida);
-    //system("pause");
     posParser = 0;
     getToken();
 
-    if (PROGC()) {
-        if(tk != -1)
-            printf("Erro: token inválido na linha %d coluna %d", linha, coluna);
-        else
-            printf("Reconhecimento sintático OK");
-    }
-    else {
-        printf("%s", msgErro);
+    if (PROGC())
+        printf("Reconhecimento sintático OK");
+    else
         printf("Falha no reconhecimento sintático");
-    }
+
     getchar();
 }
