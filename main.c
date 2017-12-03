@@ -721,7 +721,7 @@ int DEC() { // DEC -> TIPO id RDEC
         return 0;
 }
 
-int RDEC() { // RDEC -> ,DV / (DF / ;
+int RDEC() { // RDEC -> ,DV / (DF / ; / = cte;
     if (tk == TKVirgula) {
         getToken();
         if (DV())
@@ -737,8 +737,24 @@ int RDEC() { // RDEC -> ,DV / (DF / ;
     } else if (tk == TKPontoeVirg) {
         getToken();
         return 1;
-    } else {
-        printf("esperava , ou ; ou )");
+    } else if (tk == TKAtrib){
+        getToken();
+        if(tk == TKConstInt){
+            getToken();
+            if(tk == TKPontoeVirg) {
+                getToken();
+                return 1;
+            }
+            else{
+                printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
+                return 0;
+            }
+        } else{
+            printf("Erro: esperava token contante inteira na linha %d coluna %d\n", linha, coluna);
+            return 0;
+        }
+    }
+    else {
         printf("Erro: esperava token ';', ')' ou ',' na linha %d coluna %d\n", linha, coluna);
         return 0;
     }
@@ -941,10 +957,10 @@ int LCD() { //LCD -> COM LCD / TIPO DV LCD / e
         } else
             return 0;
     } else
-        return 1;
+        return 1; //teste <CRITICO>
 }
 
-int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD}
+int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD} / TIPO id RDEC
     if (E()) {
         if (tk == TKPontoeVirg) {
             getToken();
@@ -993,7 +1009,19 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             }
         } else
             return 0;
-    } else {
+    } else if(TIPO()) { // TIPO id RDEC
+        if(tk == TKId){
+            getToken();
+            if(RDEC())
+                return 1;
+            else
+                return 0;
+        } else{
+            printf("Erro: esperava token 'id' na linha %d coluna %d\n", linha, coluna);
+            return 0;
+        }
+    }
+    else {
         return 0;
     }
 }
