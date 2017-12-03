@@ -226,8 +226,6 @@ int E14();
 
 int RE();
 
-int X();
-
 struct pal_res {
     char palavra[20];
     int tk;
