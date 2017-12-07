@@ -77,7 +77,6 @@
 #define TKOULogico 71               /* | */
 #define TKXOR 72                    /* ^ */
 
-
 //CONSTANTES
 #define TKConstInt 80
 #define TKConstFloat 81
