@@ -679,7 +679,6 @@ void getToken() {
 }
 
 int PROGC() { // PROGC -> LD
-
     if (LD())
         return 1;
     else
@@ -735,24 +734,22 @@ int RDEC() { // RDEC -> ,DV / (DF / ; / = cte;
     } else if (tk == TKPontoeVirg) {
         getToken();
         return 1;
-    } else if (tk == TKAtrib){
+    } else if (tk == TKAtrib) {
         getToken();
-        if(tk == TKConstInt){
+        if (tk == TKConstInt) {
             getToken();
-            if(tk == TKPontoeVirg) {
+            if (tk == TKPontoeVirg) {
                 getToken();
                 return 1;
-            }
-            else{
+            } else {
                 printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
                 return 0;
             }
-        } else{
+        } else {
             printf("Erro: esperava token contante inteira na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    }
-    else {
+    } else {
         printf("Erro: esperava token ';', ')' ou ',' na linha %d coluna %d\n", linha, coluna);
         return 0;
     }
@@ -955,7 +952,7 @@ int LCD() { //LCD -> COM LCD / TIPO DV LCD / e
         } else
             return 0;
     } else
-        return 1; //teste <CRITICO>
+        return 1;
 }
 
 int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / return; / break; / {LCD} / TIPO id RDEC
@@ -1007,19 +1004,18 @@ int COM() { //COM -> E; / COMWHILE / COMDOWHILE / COMIF / COMFOR / COMSWITCH / r
             }
         } else
             return 0;
-    } else if(TIPO()) { // TIPO id RDEC
-        if(tk == TKId){
+    } else if (TIPO()) { // TIPO id RDEC
+        if (tk == TKId) {
             getToken();
-            if(RDEC())
+            if (RDEC())
                 return 1;
             else
                 return 0;
-        } else{
+        } else {
             printf("Erro: esperava token 'id' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    }
-    else {
+    } else {
         return 0;
     }
 }
@@ -1108,10 +1104,8 @@ int COMFOR() { //COMFOR -> for(EIF;EIF;EIF)COM RFOR
             printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
             return 0;
         }
-    } else {
-        //        printf("Erro: esperava token 'for' na linha %d coluna %d\n", linha, coluna);
+    } else
         return 0;
-    }
 }
 
 int RFOR() { //RFOR -> COM / e
@@ -1137,18 +1131,18 @@ int COMWHILE() { //COMWHILE -> while(E)COM RWHILE
                 if (tk == TKFechaPar) {
                     getToken();
                     if (COM()) {
-                        if (RWHILE())
+                       // if (RWHILE())
                             return 1;
-                        else
-                            return 0;
+                        //else
+                       //     return 0;
                     } else
                         return 0;
                 } else {
                     printf("Erro: esperava token ')' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
-            }
-            return 0;
+            } else
+                return 0;
         } else {
             printf("Erro: esperava token '(' na linha %d coluna %d\n", linha, coluna);
             return 0;
@@ -1170,7 +1164,7 @@ int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
         doWhile = 1;
         getToken();
         if (COM()) {
-            if (RDOWHILE()) {
+            //if (RDOWHILE()) {
                 if (tk == TKWhile) {
                     getToken();
                     if (tk == TKAbrePar) {
@@ -1182,8 +1176,7 @@ int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
                                     getToken();
                                     doWhile = 0;
                                     return 1;
-                                }
-                                else {
+                                } else {
                                     printf("Erro: esperava token ';' na linha %d coluna %d\n", linha, coluna);
                                 }
                             } else {
@@ -1200,8 +1193,8 @@ int COMDOWHILE() { //COMDOWHILE -> do COM RDOWHILE while(E);
                     printf("Erro: esperava token 'while' na linha %d coluna %d\n", linha, coluna);
                     return 0;
                 }
-            } else
-                return 0;
+            //} else
+            //    return 0;
         } else
             return 0;
     } else {
@@ -1760,8 +1753,7 @@ int E12Linha() {// E12' -> * E13 E12' / ÷ E13 E12' / % E13 E12' / e
         return 1;
 }
 
-int E13() { //E13 -> E14 - E13 / E14 ++ E13 / E14 -- E13 / E14 ! E13 / E14
-    // testando com E13 -> E14 - E13 / E14 ++ / E14 -- / E14 ! E13 / E14
+int E13() { // E13 -> E14 - E13 / E14 ++ / E14 -- / E14 ! E13 / E14
     if (E14()) {
         if (tk == TKMenos) {
             getToken();
@@ -1837,12 +1829,14 @@ int main() {
 
     /* /home/felipe/Área de Trabalho/entrada/entrada */
     /* "/home/canu/carvi/cent/csin/fmiotto5/Área de Trabalho/entrada" */
+
+    // Informar arquivo de entrada
     if ((entrada = fopen("/home/felipe/Área de Trabalho/entrada", "r")) == NULL) {
         printf("Arquivo não pode ser aberto\n");
         exit(1);
     }
 
-    while (1) { // passa todo o conteudo do arquivo pra um string
+    while (1) { // passa todo o conteudo do arquivo pra uma string
         c = fgetc(entrada);
         if (feof(entrada))
             break;
@@ -1856,12 +1850,13 @@ int main() {
     }
     exp1[i] = '\0';
 
+    // Informar arquivo de saída léxica
     if ((saida = fopen("/home/felipe/Área de Trabalho/saida", "w")) == NULL) {
         printf("Arquivo  dest não pode ser aberto\n");
         exit(1);
     }
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < 1000; i++) { // preenche matriz com -1 para melhor controle
         tksParser[i] = -1;
     }
 
@@ -1870,10 +1865,11 @@ int main() {
         coluna = posColuna - subColuna;
         char linhaSt[3];
         char colunaSt[3];
-        snprintf(linhaSt, sizeof(linhaSt), "%d", linha);            // converto int para string
+        snprintf(linhaSt, sizeof(linhaSt), "%d", linha);
         snprintf(colunaSt, sizeof(colunaSt), "%d", coluna);
 
 
+        // tokens de erros
         if (tk == 100) {
             fputs("TKErroE: Erro no uso da exponenciacao na Linha: ", saida);
             for (i = 0; i < strlen(linhaSt); i++) {
@@ -1911,19 +1907,19 @@ int main() {
             break;
         }
 
-
-        char token[3];                                // converte o numero de int tk
-        snprintf(token, sizeof(token), "%d", tk);     // para string token, pra poder escrever no arquivo
+        // Escrita em arquivo
+        char token[3];
         int i;
+        snprintf(token, sizeof(token), "%d", tk);
         fputs("Tipo: ", saida);
-        for (i = 0; i < strlen(token); i++) {
-            fputc(token[i], saida); // escreve token[3] no arquivo de saida
+        for (i = 0; i < strlen(token); i++) { // escreve token[3] no arquivo de saida
+            fputc(token[i], saida);
         }
         fputc(' ', saida);
         fputc(9, saida);
         fputs("Lexema: ", saida);
-        for (i = 0; i < strlen(lex); i++) {
-            fputc(lex[i], saida); // escreve o lex
+        for (i = 0; i < strlen(lex); i++) { // escreve lex no arquivo
+            fputc(lex[i], saida);
         }
         fputc(' ', saida);
         fputc(9, saida);
@@ -1943,10 +1939,10 @@ int main() {
 
         fputc(10, saida);
 
-        // coloca no tksParser[] toda a estrutura dos tokens
-        // estrutura:
-        // 0     1       2      3    4      5    ...
-        // tk  linha   coluna  tk  linha coluna  ...
+        // Coloca no tksParser[] toda a estrutura dos tokens
+        // A estrutura é a seguinte:
+        // 0     1     2       3    4     5     ...
+        // tk  linha coluna   tk  linha coluna  ...
 
         tksParser[posParser++] = tk;
         tksParser[posParser++] = linha;
@@ -1956,8 +1952,7 @@ int main() {
     fclose(entrada);
     fclose(saida);
     posParser = 0;
-    getToken();
-
+    getToken(); // Avança na sentença
     if (PROGC())
         printf("Reconhecimento sintático OK");
     else
